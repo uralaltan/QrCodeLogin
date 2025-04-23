@@ -1,11 +1,20 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+// metro.config.js
+const {getDefaultConfig} = require('metro-config');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('@react-native/metro-config').MetroConfig}
- */
-const config = {};
+module.exports = (async () => {
+  const {
+    resolver: {sourceExts, extraNodeModules},
+  } = await getDefaultConfig();
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+  return {
+    resolver: {
+      // make sure .cjs files are picked up by Metro
+      sourceExts: [...sourceExts, 'cjs'],
+      // tell Metro to use our browserify polyfill whenever it sees "stream"
+      extraNodeModules: {
+        ...(extraNodeModules || {}),
+        stream: require.resolve('stream-browserify'),
+      },
+    },
+  };
+})();
